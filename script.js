@@ -1,21 +1,18 @@
-window.onload = function(){
+window.onload = function () {
     var w = window.innerWidth || 360;
     var h = window.innerHeight || 500;
-    
     var tsw = (w > h) ? h : w;
-    
-    var sw = (tsw - 16)/8;
-    
+    var sw = (tsw - 16) / 8;
+
     var container = document.getElementById("container");
-    for(var n = 0; n < 64; n++){
+    for (var n = 0; n < 64; n++) {
         var square = document.createElement("div");
-        square.classList.add("square");
-        square.classList.add("s"+n);
+        square.classList.add("square", "s" + n);
         square.style.height = sw + 'px';
         square.style.width = sw + 'px';
-        square.style.top = 7+(h-tsw)/2+sw*(Math.floor(n/8)) + 'px';
-        square.style.left = 7+(w-tsw)/2+sw*(n%8) + 'px';
-        square.style.fontSize = sw*3/4 + 'px';
+        square.style.top = 7 + (h - tsw) / 2 + sw * (Math.floor(n / 8)) + 'px';
+        square.style.left = 7 + (w - tsw) / 2 + sw * (n % 8) + 'px';
+        square.style.fontSize = sw * 3 / 4 + 'px';
         container.appendChild(square);
     }
 
@@ -23,33 +20,58 @@ window.onload = function(){
         'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟',
         'l': '♔', 'w': '♕', 't': '♖', 'v': '♗', 'm': '♘', 'o': '♙'
     };
-    
-    var values = ['r','n','b','q','k','b','n','r','p','p','p','p','p','p','p','p',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'o','o','o','o','o','o','o','o','t','m','v','w','l','v','m','t'];
-    var ck = false; // Black king moved
-    var cr1 = false; // Black queenside rook moved
-    var cr2 = false; // Black kingside rook moved
-    var cl; // Castling flag
-    
+
+    var values = [
+        'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
+        'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+        't', 'm', 'v', 'w', 'l', 'v', 'm', 't'
+    ];
+
+    var ck = false, cr1 = false, cr2 = false, cl = false;
     var sqs = document.getElementsByClassName("square");
 
-    for(var n = 0; n < 64; n++){
-        if(values[n] !== 0){
-           sqs[n].innerHTML = fonts[values[n]];
+    function updateBoard() {
+        for (var n = 0; n < 64; n++) {
+            sqs[n].innerHTML = fonts[values[n]] || '';
+            var row = Math.floor(n / 8), col = n % 8;
+            sqs[n].style.background = (row % 2 == col % 2) ? '#9ff' : '#5fa';
         }
-        sqs[n].addEventListener("click", check);
     }
-    
-    function updateSquarecolor(){
-        for(var n = 0; n < 64; n++){
-            var row = Math.floor(n/8);
-            var col = n%8;
-            if((row%2) === (col%2)){
-                sqs[n].style.background = '#9ff';
+
+    updateBoard();
+
+    var moveable = false;
+    var moveTarget = -1;
+    var moveScopes = [];
+
+    Array.from(sqs).forEach((sq, idx) => {
+        sq.addEventListener('click', function () {
+            console.log('Square clicked:', idx); // Debug
+            if (!moveable) {
+                if (values[idx] !== 0) {
+                    moveable = true;
+                    moveTarget = idx;
+                    console.log('Piece selected:', values[idx]);
+                    sq.style.background = '#f45';
+                }
             } else {
-                sqs[n].style.background = '#5fa';
+                if (idx !== moveTarget) {
+                    console.log('Moving piece:', values[moveTarget], 'to', idx);
+                    values[idx] = values[moveTarget];
+                    values[moveTarget] = 0;
+                    updateBoard();
+                }
+                moveable = false;
+                moveTarget = -1;
             }
-        }
-    }
+        });
+    });
+};
     
     updateSquarecolor();
 
