@@ -1,56 +1,370 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="ru">
 <head>
-    <title>Chess Engine</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
-    <!-- Подключение CSS -->
-    <link rel="stylesheet" href="styles.css">
-    <!-- Подключение Stockfish -->
-    <script src="https://cdn.jsdelivr.net/npm/stockfish@14.1.0/stockfish.wasm.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Stress Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 2px solid #ffc107;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .warning::before {
+            content: '⚠️';
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .warning h3 {
+            color: #ffc107;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .warning p {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #fff;
+        }
+
+        .stress-button {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stress-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 65, 108, 0.6);
+        }
+
+        .stress-button:active {
+            transform: translateY(0);
+        }
+
+        .stress-button.active {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .stop-button {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            margin-left: 1rem;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .stop-button:hover {
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.6);
+        }
+
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .status-active {
+            background: rgba(40, 167, 69, 0.3);
+            border: 1px solid #28a745;
+        }
+
+        .cpu-usage {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(-100vh) rotate(180deg); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
-    <div id="container"></div>
-    <!-- Подключение JavaScript -->
-    <script src="script.js"></script>
+    <div class="background-animation" id="particles"></div>
+    
+    <div class="container">
+        <h1>CPU Stress Test</h1>
+        
+        <div class="warning">
+            <h3>ВНИМАНИЕ!</h3>
+            <p>Этот тест создаст максимальную нагрузку на процессор вашего устройства. Убедитесь, что устройство имеет достаточное охлаждение. Используйте на свой страх и риск!</p>
+        </div>
+
+        <button class="stress-button" id="startBtn" onclick="startStressTest()">
+            🔥 Запустить нагрузку CPU
+        </button>
+        
+        <button class="stress-button stop-button" id="stopBtn" onclick="stopStressTest()" style="display: none;">
+            ⏹️ Остановить
+        </button>
+
+        <div class="status" id="status">
+            <div>Нажмите кнопку для начала теста</div>
+        </div>
+    </div>
+
+    <script>
+        let workers = [];
+        let isRunning = false;
+        let mainLoopId;
+        let statusInterval;
+
+        // Создание фоновых частиц
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = Math.random() * 4 + 2 + 'px';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Код для Web Worker
+        const workerCode = `
+            let isRunning = true;
+            self.onmessage = function(e) {
+                if (e.data === 'stop') {
+                    isRunning = false;
+                    self.close();
+                }
+            };
+
+            function intensiveCalculation() {
+                while (isRunning) {
+                    // Интенсивные математические вычисления
+                    let result = 0;
+                    for (let i = 0; i < 1000000; i++) {
+                        result += Math.sqrt(i) * Math.sin(i) * Math.cos(i) * Math.tan(i);
+                        result += Math.pow(i, 0.5) * Math.log(i + 1);
+                        result += Math.random() * i;
+                    }
+                    
+                    // Операции с массивами
+                    const arr = new Array(10000).fill(0).map(() => Math.random());
+                    arr.sort();
+                    arr.reverse();
+                    
+                    // Строковые операции
+                    let str = '';
+                    for (let i = 0; i < 1000; i++) {
+                        str += Math.random().toString(36);
+                    }
+                    str.split('').reverse().join('');
+                }
+            }
+
+            intensiveCalculation();
+        `;
+
+        function startStressTest() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const status = document.getElementById('status');
+            
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            status.classList.add('status-active');
+            
+            // Определяем количество ядер процессора
+            const numCores = navigator.hardwareConcurrency || 4;
+            const numWorkers = numCores * 2; // Создаем в 2 раза больше воркеров
+            
+            status.innerHTML = `
+                <div class="loading">⚡</div>
+                <div>Запуск ${numWorkers} воркеров...</div>
+                <div class="cpu-usage">CPU: Максимальная нагрузка</div>
+            `;
+
+            // Создание Web Workers
+            for (let i = 0; i < numWorkers; i++) {
+                const blob = new Blob([workerCode], { type: 'application/javascript' });
+                const worker = new Worker(URL.createObjectURL(blob));
+                workers.push(worker);
+            }
+
+            // Дополнительная нагрузка в основном потоке
+            function mainThreadStress() {
+                if (!isRunning) return;
+                
+                // Интенсивные вычисления в основном потоке
+                for (let i = 0; i < 100000; i++) {
+                    Math.sqrt(i) * Math.sin(i) * Math.cos(i);
+                    Math.pow(i, 0.3) * Math.log(i + 1);
+                }
+                
+                // Создание и уничтожение DOM элементов
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = 'x'.repeat(1000);
+                document.body.appendChild(tempDiv);
+                document.body.removeChild(tempDiv);
+                
+                mainLoopId = requestAnimationFrame(mainThreadStress);
+            }
+            
+            mainThreadStress();
+
+            // Обновление статуса
+            let counter = 0;
+            statusInterval = setInterval(() => {
+                counter++;
+                status.innerHTML = `
+                    <div class="loading">⚡</div>
+                    <div>Активных воркеров: ${workers.length}</div>
+                    <div class="cpu-usage">Время работы: ${counter}с</div>
+                    <div style="font-size: 0.9rem; margin-top: 0.5rem;">🔥 CPU работает на максимуме!</div>
+                `;
+            }, 1000);
+        }
+
+        function stopStressTest() {
+            if (!isRunning) return;
+            
+            isRunning = false;
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const status = document.getElementById('status');
+            
+            // Остановка всех воркеров
+            workers.forEach(worker => {
+                worker.postMessage('stop');
+                worker.terminate();
+            });
+            workers = [];
+            
+            // Остановка основного цикла
+            if (mainLoopId) {
+                cancelAnimationFrame(mainLoopId);
+            }
+            
+            if (statusInterval) {
+                clearInterval(statusInterval);
+            }
+            
+            startBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
+            status.classList.remove('status-active');
+            status.innerHTML = '<div>✅ Нагрузка остановлена</div>';
+            
+            setTimeout(() => {
+                status.innerHTML = '<div>Нажмите кнопку для начала теста</div>';
+            }, 3000);
+        }
+
+        // Автоматическая остановка при закрытии страницы
+        window.addEventListener('beforeunload', stopStressTest);
+        
+        // Инициализация
+        createParticles();
+    </script>
 </body>
 </html>
