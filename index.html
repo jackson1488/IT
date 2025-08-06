@@ -3,368 +3,466 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPU Stress Test</title>
+    <title>Такси Онлайн</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .container {
-            text-align: center;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.05);
+        
+        .taxi-card {
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-            max-width: 500px;
-            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
-            background-size: 200% 200%;
+        
+        .header-icon {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: gradient 3s ease infinite;
+            background-clip: text;
         }
-
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .warning {
-            background: rgba(255, 193, 7, 0.2);
-            border: 2px solid #ffc107;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .warning::before {
-            content: '⚠️';
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .warning h3 {
-            color: #ffc107;
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        .warning p {
-            font-size: 0.9rem;
-            line-height: 1.4;
-            color: #fff;
-        }
-
-        .stress-button {
-            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        
+        .btn-taxi {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
             border: none;
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: white;
             border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            padding: 15px 40px;
+            font-weight: 600;
+            font-size: 1.1rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
         }
-
-        .stress-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 65, 108, 0.6);
+        
+        .btn-taxi:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.6);
+            background: linear-gradient(45deg, #f7931e, #ff6b35);
         }
-
-        .stress-button:active {
-            transform: translateY(0);
+        
+        .btn-taxi:disabled {
+            opacity: 0.7;
+            transform: none;
+            cursor: not-allowed;
         }
-
-        .stress-button.active {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            animation: pulse 1s infinite;
+        
+        .form-control {
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
         }
-
+        
+        .form-control:focus {
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+        
+        .map-container {
+            background: linear-gradient(45deg, #e3f2fd, #f3e5f5);
+            border: 2px dashed #9c27b0;
+            border-radius: 15px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .map-container.has-location {
+            background: linear-gradient(45deg, #e8f5e8, #f0f8ff);
+            border-color: #4caf50;
+        }
+        
+        .location-info {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4caf50;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .price-display {
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+        }
+        
+        .order-result {
+            background: linear-gradient(45deg, #2196f3, #21cbf3);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.3);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
-
-        .stop-button {
-            background: linear-gradient(45deg, #dc3545, #c82333);
-            margin-left: 1rem;
-            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
-        }
-
-        .stop-button:hover {
-            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.6);
-        }
-
-        .status {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            min-height: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .status-active {
-            background: rgba(40, 167, 69, 0.3);
-            border: 1px solid #28a745;
-        }
-
-        .cpu-usage {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #ff6b6b;
-        }
-
-        .loading {
-            display: inline-block;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .background-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0; }
-            50% { transform: translateY(-100vh) rotate(180deg); opacity: 1; }
-        }
     </style>
 </head>
 <body>
-    <div class="background-animation" id="particles"></div>
-    
-    <div class="container">
-        <h1>CPU Stress Test</h1>
-        
-        <div class="warning">
-            <h3>ВНИМАНИЕ!</h3>
-            <p>Этот тест создаст максимальную нагрузку на процессор вашего устройства. Убедитесь, что устройство имеет достаточное охлаждение. Используйте на свой страх и риск!</p>
-        </div>
-
-        <button class="stress-button" id="startBtn" onclick="startStressTest()">
-            🔥 Запустить нагрузку CPU
-        </button>
-        
-        <button class="stress-button stop-button" id="stopBtn" onclick="stopStressTest()" style="display: none;">
-            ⏹️ Остановить
-        </button>
-
-        <div class="status" id="status">
-            <div>Нажмите кнопку для начала теста</div>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="taxi-card p-5">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <i class="fas fa-taxi header-icon"></i>
+                        <h1 class="display-4 fw-bold text-primary mt-3">Такси Онлайн</h1>
+                        <p class="lead text-muted">Быстро, удобно, надежно</p>
+                    </div>
+                    
+                    <!-- Destination Input -->
+                    <div class="mb-4">
+                        <label for="destination" class="form-label h5">
+                            <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                            Куда поедем?
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="destination" 
+                               placeholder="Введите адрес назначения..."
+                               required>
+                    </div>
+                    
+                    <!-- Map Container -->
+                    <div class="map-container mb-4" id="mapContainer">
+                        <div class="text-center">
+                            <i class="fas fa-map text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-3 mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Нажмите "Заказать такси" для определения вашего местоположения
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Location Info -->
+                    <div id="locationInfo" style="display: none;"></div>
+                    
+                    <!-- Price Display -->
+                    <div id="priceDisplay" style="display: none;"></div>
+                    
+                    <!-- Order Button -->
+                    <div class="text-center mb-4">
+                        <button class="btn btn-taxi btn-lg text-white" id="orderBtn" onclick="orderTaxi()">
+                            <i class="fas fa-car me-2"></i>
+                            Заказать такси
+                        </button>
+                    </div>
+                    
+                    <!-- Order Result -->
+                    <div id="orderResult" style="display: none;"></div>
+                    
+                    <!-- Status Messages -->
+                    <div id="statusMessage"></div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        let workers = [];
-        let isRunning = false;
-        let mainLoopId;
-        let statusInterval;
-
-        // Создание фоновых частиц
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.width = particle.style.height = Math.random() * 4 + 2 + 'px';
-                particle.style.animationDelay = Math.random() * 6 + 's';
-                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
-                container.appendChild(particle);
-            }
-        }
-
-        // Код для Web Worker
-        const workerCode = `
-            let isRunning = true;
-            self.onmessage = function(e) {
-                if (e.data === 'stop') {
-                    isRunning = false;
-                    self.close();
-                }
-            };
-
-            function intensiveCalculation() {
-                while (isRunning) {
-                    // Интенсивные математические вычисления
-                    let result = 0;
-                    for (let i = 0; i < 1000000; i++) {
-                        result += Math.sqrt(i) * Math.sin(i) * Math.cos(i) * Math.tan(i);
-                        result += Math.pow(i, 0.5) * Math.log(i + 1);
-                        result += Math.random() * i;
-                    }
-                    
-                    // Операции с массивами
-                    const arr = new Array(10000).fill(0).map(() => Math.random());
-                    arr.sort();
-                    arr.reverse();
-                    
-                    // Строковые операции
-                    let str = '';
-                    for (let i = 0; i < 1000; i++) {
-                        str += Math.random().toString(36);
-                    }
-                    str.split('').reverse().join('');
-                }
-            }
-
-            intensiveCalculation();
-        `;
-
-        function startStressTest() {
-            if (isRunning) return;
-            
-            isRunning = true;
-            const startBtn = document.getElementById('startBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const status = document.getElementById('status');
-            
-            startBtn.style.display = 'none';
-            stopBtn.style.display = 'inline-block';
-            status.classList.add('status-active');
-            
-            // Определяем количество ядер процессора
-            const numCores = navigator.hardwareConcurrency || 4;
-            const numWorkers = numCores * 2; // Создаем в 2 раза больше воркеров
-            
-            status.innerHTML = `
-                <div class="loading">⚡</div>
-                <div>Запуск ${numWorkers} воркеров...</div>
-                <div class="cpu-usage">CPU: Максимальная нагрузка</div>
-            `;
-
-            // Создание Web Workers
-            for (let i = 0; i < numWorkers; i++) {
-                const blob = new Blob([workerCode], { type: 'application/javascript' });
-                const worker = new Worker(URL.createObjectURL(blob));
-                workers.push(worker);
-            }
-
-            // Дополнительная нагрузка в основном потоке
-            function mainThreadStress() {
-                if (!isRunning) return;
-                
-                // Интенсивные вычисления в основном потоке
-                for (let i = 0; i < 100000; i++) {
-                    Math.sqrt(i) * Math.sin(i) * Math.cos(i);
-                    Math.pow(i, 0.3) * Math.log(i + 1);
-                }
-                
-                // Создание и уничтожение DOM элементов
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = 'x'.repeat(1000);
-                document.body.appendChild(tempDiv);
-                document.body.removeChild(tempDiv);
-                
-                mainLoopId = requestAnimationFrame(mainThreadStress);
-            }
-            
-            mainThreadStress();
-
-            // Обновление статуса
-            let counter = 0;
-            statusInterval = setInterval(() => {
-                counter++;
-                status.innerHTML = `
-                    <div class="loading">⚡</div>
-                    <div>Активных воркеров: ${workers.length}</div>
-                    <div class="cpu-usage">Время работы: ${counter}с</div>
-                    <div style="font-size: 0.9rem; margin-top: 0.5rem;">🔥 CPU работает на максимуме!</div>
-                `;
-            }, 1000);
-        }
-
-        function stopStressTest() {
-            if (!isRunning) return;
-            
-            isRunning = false;
-            const startBtn = document.getElementById('startBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const status = document.getElementById('status');
-            
-            // Остановка всех воркеров
-            workers.forEach(worker => {
-                worker.postMessage('stop');
-                worker.terminate();
-            });
-            workers = [];
-            
-            // Остановка основного цикла
-            if (mainLoopId) {
-                cancelAnimationFrame(mainLoopId);
-            }
-            
-            if (statusInterval) {
-                clearInterval(statusInterval);
-            }
-            
-            startBtn.style.display = 'inline-block';
-            stopBtn.style.display = 'none';
-            status.classList.remove('status-active');
-            status.innerHTML = '<div>✅ Нагрузка остановлена</div>';
-            
-            setTimeout(() => {
-                status.innerHTML = '<div>Нажмите кнопку для начала теста</div>';
-            }, 3000);
-        }
-
-        // Автоматическая остановка при закрытии страницы
-        window.addEventListener('beforeunload', stopStressTest);
+        let userLocation = null;
+        let calculatedPrice = 0;
         
-        // Инициализация
-        createParticles();
+        // Backend URL - измените на ваш реальный URL
+        const BACKEND_URL = 'http://localhost:5000';
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            const alertClass = type === 'error' ? 'alert-danger' : 
+                              type === 'success' ? 'alert-success' : 'alert-info';
+            
+            statusDiv.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = statusDiv.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+        
+        function setLoading(isLoading) {
+            const btn = document.getElementById('orderBtn');
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading me-2"></span>Обработка...';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-car me-2"></i>Заказать такси';
+            }
+        }
+        
+        function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Геолокация не поддерживается вашим браузером'));
+                    return;
+                }
+                
+                showStatus('Определяем ваше местоположение...', 'info');
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        });
+                    },
+                    (error) => {
+                        let errorMessage = 'Не удалось определить местоположение';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Доступ к геолокации запрещен';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Информация о местоположении недоступна';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'Время ожидания геолокации истекло';
+                                break;
+                        }
+                        reject(new Error(errorMessage));
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 300000
+                    }
+                );
+            });
+        }
+        
+        function displayLocation(location) {
+            const mapContainer = document.getElementById('mapContainer');
+            const locationInfo = document.getElementById('locationInfo');
+            
+            // Update map container
+            mapContainer.classList.add('has-location');
+            mapContainer.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-map-marked-alt text-success pulse" style="font-size: 4rem;"></i>
+                    <p class="text-success mt-3 mb-0 fw-bold">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Ваше местоположение определено!
+                    </p>
+                    <small class="text-muted">
+                        Координаты: ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}
+                    </small>
+                </div>
+            `;
+            
+            // Show location info
+            locationInfo.style.display = 'block';
+            locationInfo.innerHTML = `
+                <div class="location-info">
+                    <h6 class="text-success mb-2">
+                        <i class="fas fa-map-pin me-2"></i>
+                        Точка отправления
+                    </h6>
+                    <p class="mb-1"><strong>Широта:</strong> ${location.latitude.toFixed(6)}</p>
+                    <p class="mb-0"><strong>Долгота:</strong> ${location.longitude.toFixed(6)}</p>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Имитационные координаты для демонстрации
+                    </small>
+                </div>
+            `;
+        }
+        
+        function calculatePrice(destination) {
+            // Имитация расчета цены на основе "расстояния"
+            const basePrice = 100;
+            const distanceMultiplier = Math.random() * 4 + 1; // 1-5x
+            const destinationLength = destination.length;
+            
+            // Более длинные адреса = больше расстояние
+            const price = Math.round(basePrice + (destinationLength * 5) + (distanceMultiplier * 50));
+            
+            return Math.min(Math.max(price, 100), 500); // Между 100-500 сом
+        }
+        
+        function displayPrice(price) {
+            const priceDisplay = document.getElementById('priceDisplay');
+            priceDisplay.style.display = 'block';
+            priceDisplay.innerHTML = `
+                <i class="fas fa-money-bill-wave me-3"></i>
+                Стоимость поездки: <span class="fs-2">${price}</span> сом
+                <div class="mt-2">
+                    <small class="opacity-75">
+                        <i class="fas fa-calculator me-1"></i>
+                        Расчет основан на имитационном расстоянии
+                    </small>
+                </div>
+            `;
+        }
+        
+        async function sendOrderToBackend(orderData) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('Backend request failed:', error);
+                // Fallback - имитация ответа backend'а
+                return {
+                    status: 'accepted',
+                    message: 'Заказ принят (локальная имитация)',
+                    arrival_time: Math.floor(Math.random() * 10) + 3,
+                    order_id: 'LOCAL_' + Date.now()
+                };
+            }
+        }
+        
+        function displayOrderResult(result) {
+            const orderResult = document.getElementById('orderResult');
+            orderResult.style.display = 'block';
+            orderResult.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-check-circle mb-3" style="font-size: 3rem;"></i>
+                    <h4 class="mb-3">${result.message}</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <i class="fas fa-clock me-2"></i>
+                                <strong>Время прибытия:</strong>
+                            </div>
+                            <div class="fs-5 mb-3">${result.arrival_time} минут</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <i class="fas fa-receipt me-2"></i>
+                                <strong>ID заказа:</strong>
+                            </div>
+                            <div class="fs-6 mb-3 text-break">${result.order_id}</div>
+                        </div>
+                    </div>
+                    <small class="opacity-75">
+                        <i class="fas fa-car me-1"></i>
+                        Водитель уже в пути!
+                    </small>
+                </div>
+            `;
+            
+            // Scroll to result
+            orderResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        async function orderTaxi() {
+            const destination = document.getElementById('destination').value.trim();
+            
+            if (!destination) {
+                showStatus('Пожалуйста, введите адрес назначения', 'error');
+                document.getElementById('destination').focus();
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                // Step 1: Get user location
+                if (!userLocation) {
+                    userLocation = await getUserLocation();
+                    displayLocation(userLocation);
+                    showStatus('Местоположение успешно определено!', 'success');
+                }
+                
+                // Step 2: Calculate price
+                calculatedPrice = calculatePrice(destination);
+                displayPrice(calculatedPrice);
+                
+                // Step 3: Send order to backend
+                const orderData = {
+                    destination: destination,
+                    start_coordinates: userLocation,
+                    price: calculatedPrice,
+                    timestamp: new Date().toISOString()
+                };
+                
+                showStatus('Отправляем заказ...', 'info');
+                const result = await sendOrderToBackend(orderData);
+                
+                // Step 4: Display result
+                displayOrderResult(result);
+                showStatus('Заказ успешно оформлен!', 'success');
+                
+            } catch (error) {
+                console.error('Order error:', error);
+                showStatus(error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        // Enter key support
+        document.getElementById('destination').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                orderTaxi();
+            }
+        });
+        
+        // Auto-focus destination input
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('destination').focus();
+        });
     </script>
 </body>
 </html>
